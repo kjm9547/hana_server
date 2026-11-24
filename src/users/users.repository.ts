@@ -5,7 +5,7 @@ import type { Database } from '../db/database.js';
 import { users } from '../db/schema.js';
 
 // 남에게 보여도 되는 컬럼 / 본인에게만 보이는 컬럼. password_hash는 이 파일 밖으로 나가지 않는다.
-const publicCols = { id: users.id, nickname: users.nickname, nativeLang: users.nativeLang, bio: users.bio };
+export const publicCols = { id: users.id, nickname: users.nickname, nativeLang: users.nativeLang, bio: users.bio };
 const meCols = { ...publicCols, email: users.email, createdAt: users.createdAt };
 
 export type User = Omit<typeof users.$inferSelect, 'passwordHash'>;
@@ -37,6 +37,11 @@ export class UsersRepository {
 
   async findById(id: number): Promise<User | null> {
     const [user] = await this.db.select(meCols).from(users).where(eq(users.id, id));
+    return user ?? null;
+  }
+
+  async findPublicById(id: number) {
+    const [user] = await this.db.select(publicCols).from(users).where(eq(users.id, id));
     return user ?? null;
   }
 
