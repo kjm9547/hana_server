@@ -10,5 +10,7 @@ export const users = sqliteTable('users', {
   nickname: text().notNull(),
   nativeLang: text('native_lang', { enum: LANGS }).notNull(),
   bio: text().notNull().default(''),
-  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(sql`(unixepoch() * 1000)`),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
 });
