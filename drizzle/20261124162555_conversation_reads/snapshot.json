@@ -1,0 +1,205 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "060ca2a7-214c-4788-b29d-1572e1a43da1",
+  "prevIds": [
+    "0bf6defe-dfce-4356-beb6-6ce277e70212"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "conversation_reads"
+      ],
+      "writes": [
+        "s|tbl|public.conversation_reads",
+        "n|tbl|public.conversation_reads",
+        "e|tbl|public.conversation_reads",
+        "n|rel|public.conversation_reads",
+        "n|type|public.conversation_reads",
+        "n|rel|public.conversation_reads_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "conversation_reads"
+      ],
+      "writes": [
+        "s|fk|public.conversation_reads.conversation_reads_conversation_id_conversations_id_fkey",
+        "n|fk|public.conversation_reads.conversation_reads_conversation_id_conversations_id_fkey",
+        "e|fk|public.conversation_reads.conversation_reads_conversation_id_conversations_id_fkey",
+        "n|con|public.conversation_reads.conversation_reads_conversation_id_conversations_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.conversation_reads",
+        "n|sch|public",
+        "n|tbl|public.conversations",
+        "n|sch|public",
+        "n|col|public.conversation_reads.conversation_id",
+        "n|col|public.conversations.id",
+        "e|uniqueness|public.conversations.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "conversation_reads"
+      ],
+      "writes": [
+        "s|fk|public.conversation_reads.conversation_reads_user_id_users_id_fkey",
+        "n|fk|public.conversation_reads.conversation_reads_user_id_users_id_fkey",
+        "e|fk|public.conversation_reads.conversation_reads_user_id_users_id_fkey",
+        "n|con|public.conversation_reads.conversation_reads_user_id_users_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.conversation_reads",
+        "n|sch|public",
+        "n|tbl|public.users",
+        "n|sch|public",
+        "n|col|public.conversation_reads.user_id",
+        "n|col|public.users.id",
+        "e|uniqueness|public.users.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "conversation_reads",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "conversation_reads",
+        "name": "conversation_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "conversation_reads",
+        "name": "user_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "conversation_reads",
+        "name": "last_read_message_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "conversation_reads",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "conversation_reads",
+        "name": "conversation_reads_conversation_id_conversations_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "conversation_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "conversations",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "conversation_reads",
+        "name": "conversation_reads_user_id_users_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "users",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "conversation_reads",
+        "name": "conversation_reads_pkey",
+        "columns": [
+          "conversation_id",
+          "user_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
+}

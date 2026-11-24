@@ -23,6 +23,11 @@ export class ChatGateway implements OnGatewayConnection {
     if (result) await client.join(userRoom((result.user as User).id));
   }
 
+  /** 누가 어디까지 읽었는지. 상대 화면의 '읽음' 표시와 내 다른 기기의 안 읽은 수를 맞춘다 */
+  notifyRead(userIds: number[], payload: { conversationId: number; userId: number; lastReadMessageId: number }) {
+    this.server.to(userIds.map(userRoom)).emit('conversation:read', payload);
+  }
+
   notifyMessage(userIds: number[], message: Message) {
     this.server.to(userIds.map(userRoom)).emit('message:new', { conversationId: message.conversationId, message });
   }

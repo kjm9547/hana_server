@@ -1,4 +1,4 @@
-import { createTestApp } from './helpers.js';
+import { createTestApp, letter } from './helpers.js';
 
 describe('차단·신고·매칭 옵션', () => {
   let t: Awaited<ReturnType<typeof createTestApp>>;
@@ -54,9 +54,9 @@ describe('차단·신고·매칭 옵션', () => {
     const junList = await t.http().get('/conversations').set(jun.auth).expect(200);
     expect(junList.body.items).toHaveLength(1);
 
-    // 해제하면 다시 보낼 수 있다
+    // 해제하면 다시 보낼 수 있다 (jun의 첫 메시지라 편지 길이)
     await t.http().delete(`/users/${jun.id}/block`).set(hana.auth).expect(204);
-    await t.http().post(path).set(jun.auth).send({ body: 'hi' }).expect(201);
+    await t.http().post(path).set(jun.auth).send({ body: letter() }).expect(201);
   });
 
   it('신고: 사유 검증, 대화방 근거 확인, 신고하면 자동 차단', async () => {
