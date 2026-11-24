@@ -1,6 +1,17 @@
-import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { CurrentUser } from '@nestjs/authentication';
 import { z } from 'zod';
+import { SafetyRepository } from '../safety/safety.repository.js';
 import { UsersRepository } from '../users/users.repository.js';
 import { ChatGateway } from './chat.gateway.js';
 import { ChatRepository } from './chat.repository.js';
@@ -19,6 +30,7 @@ export class ChatController {
     private readonly chat: ChatRepository,
     private readonly users: UsersRepository,
     private readonly gateway: ChatGateway,
+    private readonly safety: SafetyRepository,
   ) {}
 
   @Post()
@@ -29,13 +41,15 @@ export class ChatController {
     if (partnerId === meId) throw new BadRequestException('Cannot start a conversation with yourself');
     const partner = await this.users.findPublicById(partnerId);
     if (!partner) throw new NotFoundException('User not found');
+    await this.requireNotBlocked(meId, partnerId);
     const conversation = await this.chat.getOrCreate(meId, partnerId);
     return { id: conversation.id, partner };
   }
 
   @Get()
   async list(@CurrentUser('id') meId: number) {
-    return { items: await this.chat.list(meId) };
+    // 내가 차단한 상대와의 방은 숨긴다. 상대가 나를 차단한 방은 보이되 보낼 수 없다
+    return { items: await this.chat.list(meId, await this.safety.blockedIdsBy(meId)) };
   }
 
   @Get(':id/messages')
@@ -55,9 +69,14 @@ export class ChatController {
     @Body({ schema: sendSchema }) { body }: z.infer<typeof sendSchema>,
   ) {
     const conversation = await this.requireMember(conversationId, meId);
+    await this.requireNotBlocked(conversation.userAId, conversation.userBId);
     const message = await this.chat.send(conversationId, meId, body);
     this.gateway.notifyMessage([conversation.userAId, conversation.userBId], message);
     return message;
+  }
+
+  private async requireNotBlocked(a: number, b: number) {
+    if (await this.safety.isBlockedEitherWay(a, b)) throw new ForbiddenException('You cannot message this user');
   }
 
   private async requireMember(conversationId: number, meId: number) {

@@ -1,12 +1,17 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDrizzle } from '@nestjs/drizzle';
-import { and, asc, eq, gt, ne } from 'drizzle-orm';
+import { and, asc, eq, gt, ne, notInArray } from 'drizzle-orm';
 import type { Database } from '../db/database.js';
 import { users } from '../db/schema.js';
 
 // 남에게 보여도 되는 컬럼 / 본인에게만 보이는 컬럼. password_hash는 이 파일 밖으로 나가지 않는다.
 export const publicCols = { id: users.id, nickname: users.nickname, nativeLang: users.nativeLang, bio: users.bio };
-const meCols = { ...publicCols, email: users.email, createdAt: users.createdAt };
+const meCols = {
+  ...publicCols,
+  email: users.email,
+  matchPreference: users.matchPreference,
+  createdAt: users.createdAt,
+};
 
 export type User = Omit<typeof users.$inferSelect, 'passwordHash'>;
 type NewUser = Pick<typeof users.$inferInsert, 'email' | 'passwordHash' | 'nickname' | 'nativeLang'>;
@@ -45,18 +50,24 @@ export class UsersRepository {
     return user ?? null;
   }
 
-  async update(id: number, changes: { nickname?: string; bio?: string }): Promise<User> {
+  async update(id: number, changes: Partial<Pick<User, 'nickname' | 'bio' | 'matchPreference'>>): Promise<User> {
     const [user] = await this.db.update(users).set(changes).where(eq(users.id, id)).returning(meCols);
     if (!user) throw new NotFoundException();
     return user;
   }
 
   /** 언어교환 상대: 모국어가 나와 다른 사람. limit+1개를 읽어 다음 페이지 유무를 판단. */
-  async partners(me: User, limit: number, after?: number) {
+  async partners(me: User, limit: number, excludeIds: number[], after?: number) {
     const rows = await this.db
       .select(publicCols)
       .from(users)
-      .where(and(ne(users.nativeLang, me.nativeLang), after ? gt(users.id, after) : undefined))
+      .where(
+        and(
+          ne(users.nativeLang, me.nativeLang),
+          excludeIds.length ? notInArray(users.id, excludeIds) : undefined,
+          after ? gt(users.id, after) : undefined,
+        ),
+      )
       .orderBy(asc(users.id))
       .limit(limit + 1);
     const items = rows.slice(0, limit);

@@ -8,6 +8,8 @@ import { ChatGateway } from './chat/chat.gateway.js';
 import { ChatRepository } from './chat/chat.repository.js';
 import { createDatabase } from './db/database.js';
 import { PhrasesController } from './phrases/phrases.js';
+import { SafetyController } from './safety/safety.controller.js';
+import { SafetyRepository } from './safety/safety.repository.js';
 import { UsersController } from './users/users.controller.js';
 import { UsersRepository } from './users/users.repository.js';
 
@@ -22,11 +24,12 @@ import { UsersRepository } from './users/users.repository.js';
       refreshToken: false,
     }),
   ],
-  controllers: [AuthController, UsersController, PhrasesController, ChatController],
+  controllers: [AuthController, UsersController, PhrasesController, ChatController, SafetyController],
   providers: [
     UsersRepository,
     ChatRepository,
     ChatGateway,
+    SafetyRepository,
     JwtAuth,
     { provide: APP_PIPE, useValue: new StandardSchemaValidationPipe() },
   ],

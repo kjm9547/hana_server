@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDrizzle } from '@nestjs/drizzle';
-import { and, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt, notInArray, or, sql } from 'drizzle-orm';
 import type { Database } from '../db/database.js';
 import { conversations, messages, users } from '../db/schema.js';
 import { publicCols } from '../users/users.repository.js';
@@ -51,13 +51,18 @@ export class ChatRepository {
 
   /** 내 대화방 목록: 상대 공개 프로필 + 마지막 메시지, 최근 활동순. */
   // ponytail: 페이징 없음. 대화방이 수백 개 쌓이는 유저가 생기면 last_message_at 커서로.
-  async list(meId: number) {
+  async list(meId: number, hiddenPartnerIds: number[] = []) {
     const partnerId = sql<number>`case when ${conversations.userAId} = ${meId} then ${conversations.userBId} else ${conversations.userAId} end`;
     const rows = await this.db
       .select({ id: conversations.id, partner: publicCols })
       .from(conversations)
       .innerJoin(users, eq(users.id, partnerId))
-      .where(or(eq(conversations.userAId, meId), eq(conversations.userBId, meId)))
+      .where(
+        and(
+          or(eq(conversations.userAId, meId), eq(conversations.userBId, meId)),
+          hiddenPartnerIds.length ? notInArray(users.id, hiddenPartnerIds) : undefined,
+        ),
+      )
       .orderBy(desc(sql`coalesce(${conversations.lastMessageAt}, ${conversations.createdAt})`), desc(conversations.id));
     if (rows.length === 0) return [];
 
