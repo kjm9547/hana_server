@@ -1,16 +1,14 @@
-import { rmSync } from 'node:fs';
 import { Test } from '@nestjs/testing';
 import type { INestApplication } from '@nestjs/common';
 import { PasswordHasher } from '@nestjs/authentication';
 import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
 
-// JWT_SECRET, DATABASE_FILE은 vitest.config.e2e.ts의 env에서 온다.
+// JWT_SECRET, DATABASE_URL(인메모리 PGlite)은 vitest.config.e2e.ts의 env에서 온다. 앱마다 빈 DB로 시작.
 describe('가입 → 로그인 → 프로필 → 상대 목록', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
-    rmSync(process.env.DATABASE_FILE!, { force: true });
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(PasswordHasher)
       .useValue(new PasswordHasher({ logN: 10 }))

@@ -1,16 +1,14 @@
-import { sql } from 'drizzle-orm';
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { integer, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 
 export const LANGS = ['ko', 'ja'] as const;
+export const lang = pgEnum('lang', LANGS);
 
-export const users = sqliteTable('users', {
-  id: integer().primaryKey({ autoIncrement: true }),
+export const users = pgTable('users', {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
   email: text().notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   nickname: text().notNull(),
-  nativeLang: text('native_lang', { enum: LANGS }).notNull(),
+  nativeLang: lang('native_lang').notNull(),
   bio: text().notNull().default(''),
-  createdAt: integer('created_at', { mode: 'timestamp_ms' })
-    .notNull()
-    .default(sql`(unixepoch() * 1000)`),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
