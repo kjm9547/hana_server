@@ -3,6 +3,9 @@ import { APP_PIPE } from '@nestjs/core';
 import { AuthenticationModule } from '@nestjs/authentication';
 import { DrizzleModule } from '@nestjs/drizzle';
 import { AuthController, JwtAuth } from './auth/auth.js';
+import { ChatController } from './chat/chat.controller.js';
+import { ChatGateway } from './chat/chat.gateway.js';
+import { ChatRepository } from './chat/chat.repository.js';
 import { createDatabase } from './db/database.js';
 import { PhrasesController } from './phrases/phrases.js';
 import { UsersController } from './users/users.controller.js';
@@ -19,7 +22,13 @@ import { UsersRepository } from './users/users.repository.js';
       refreshToken: false,
     }),
   ],
-  controllers: [AuthController, UsersController, PhrasesController],
-  providers: [UsersRepository, JwtAuth, { provide: APP_PIPE, useValue: new StandardSchemaValidationPipe() }],
+  controllers: [AuthController, UsersController, PhrasesController, ChatController],
+  providers: [
+    UsersRepository,
+    ChatRepository,
+    ChatGateway,
+    JwtAuth,
+    { provide: APP_PIPE, useValue: new StandardSchemaValidationPipe() },
+  ],
 })
 export class AppModule {}
