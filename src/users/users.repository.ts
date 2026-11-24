@@ -1,7 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import { and, asc, eq, gt, ne } from 'drizzle-orm';
-import type { LibSQLDatabase } from 'drizzle-orm/libsql';
+import type { Database } from '../db/database.js';
 import { users } from '../db/schema.js';
 
 // 남에게 보여도 되는 컬럼 / 본인에게만 보이는 컬럼. password_hash는 이 파일 밖으로 나가지 않는다.
@@ -13,7 +13,7 @@ type NewUser = Pick<typeof users.$inferInsert, 'email' | 'passwordHash' | 'nickn
 
 @Injectable()
 export class UsersRepository {
-  constructor(@InjectDrizzle() private readonly db: LibSQLDatabase) {}
+  constructor(@InjectDrizzle() private readonly db: Database) {}
 
   async create(data: NewUser): Promise<User> {
     try {
@@ -59,10 +59,10 @@ export class UsersRepository {
   }
 }
 
-/** Drizzle은 드라이버 에러를 감싸므로 cause 체인을 따라간다. (SQLite / Postgres) */
+/** Drizzle은 드라이버 에러를 감싸므로 cause 체인을 따라간다. 23505 = Postgres unique_violation */
 function isUniqueViolation(error: unknown): boolean {
-  for (let e = error as { code?: string; rawCode?: number; cause?: unknown } | undefined; e; e = e.cause as typeof e) {
-    if (e.code === 'SQLITE_CONSTRAINT_UNIQUE' || e.rawCode === 2067 || e.code === '23505') return true;
+  for (let e = error as { code?: string; cause?: unknown } | undefined; e; e = e.cause as typeof e) {
+    if (e.code === '23505') return true;
   }
   return false;
 }

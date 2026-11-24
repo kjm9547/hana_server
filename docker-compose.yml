@@ -1,0 +1,22 @@
+# 로컬 개발용 Postgres. 비밀번호는 로컬 전용 값 — 운영 배포 시 반드시 바꾼다.
+# 호스트 5432는 Homebrew Postgres가 쓰고 있어서 5433으로 연다.
+services:
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hana
+      POSTGRES_PASSWORD: hana
+      POSTGRES_DB: hana_dev
+    ports:
+      - '5433:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U hana -d hana_dev']
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  pgdata:
