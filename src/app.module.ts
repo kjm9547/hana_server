@@ -6,7 +6,10 @@ import { AuthController, JwtAuth } from './auth/auth.js';
 import { ChatController } from './chat/chat.controller.js';
 import { ChatGateway } from './chat/chat.gateway.js';
 import { ChatRepository } from './chat/chat.repository.js';
+import { Clock } from './common/clock.js';
 import { createDatabase } from './db/database.js';
+import { IntroductionsController } from './introductions/introductions.controller.js';
+import { IntroductionsRepository } from './introductions/introductions.repository.js';
 import { PhrasesController } from './phrases/phrases.js';
 import { SafetyController } from './safety/safety.controller.js';
 import { SafetyRepository } from './safety/safety.repository.js';
@@ -24,12 +27,21 @@ import { UsersRepository } from './users/users.repository.js';
       refreshToken: false,
     }),
   ],
-  controllers: [AuthController, UsersController, PhrasesController, ChatController, SafetyController],
+  controllers: [
+    AuthController,
+    UsersController,
+    PhrasesController,
+    ChatController,
+    SafetyController,
+    IntroductionsController,
+  ],
   providers: [
     UsersRepository,
     ChatRepository,
     ChatGateway,
     SafetyRepository,
+    IntroductionsRepository,
+    Clock,
     JwtAuth,
     { provide: APP_PIPE, useValue: new StandardSchemaValidationPipe() },
   ],
