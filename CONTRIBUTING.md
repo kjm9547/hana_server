@@ -75,7 +75,7 @@ Hana의 모든 레포(`hana_front`, `hana_server`)에 같은 규칙을 쓴다. �
 ## 6. 머지
 
 - 방식: **Squash 머지만** 허용. 머지 후 브랜치는 자동 삭제된다.
-- 조건: CI(`check`, `pr-title`) 통과.
+- 조건: CI 통과 — 서버는 `check`(npm run check)·`pr-title`, 프론트는 `pr-title`.
 - **머지는 오너(jaemin)가 한다.** AI 에이전트는 PR까지만 만들고, 오너가 명시적으로 요청할 때만 머지한다.
 
 ## 7. AI 에이전트 추가 규칙
