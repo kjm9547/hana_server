@@ -36,7 +36,10 @@ describe('가입 → 로그인 → 프로필 → 상대 목록', () => {
     await register('bad', 'ko').expect(400);
 
     await http.post('/auth/token').send({ email: 'minsu@example.com', password: 'wrong-pass' }).expect(401);
-    const signIn = await http.post('/auth/token').send({ email: 'minsu@example.com', password: 'password123' }).expect(200);
+    const signIn = await http
+      .post('/auth/token')
+      .send({ email: 'minsu@example.com', password: 'password123' })
+      .expect(200);
     expect(typeof signIn.body.accessToken).toBe('string');
     const auth = { Authorization: `Bearer ${ko.body.accessToken}` };
 

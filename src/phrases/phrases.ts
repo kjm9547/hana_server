@@ -14,6 +14,7 @@ export type Phrase = {
 };
 
 // ponytail: 코드에 박은 목록. 운영자가 문구를 자주 바꾸게 되면 DB 테이블 + 관리 화면으로.
+// prettier-ignore
 export const PHRASES: Phrase[] = [
   { ko: '만나서 반가워요', ja: 'お会いできて嬉しいです', koReading: 'マンナソ パンガウォヨ', jaReading: '오아이데키테 우레시이데스', situation: { ko: '처음 만났을 때', ja: '初めて会った時' } },
   { ko: '천천히 말해 주세요', ja: 'ゆっくり話してください', koReading: 'チョンチョニ マレ ジュセヨ', jaReading: '윳쿠리 하나시테 쿠다사이', situation: { ko: '잘 못 알아들었을 때', ja: '聞き取れない時' } },
