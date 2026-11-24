@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDrizzle } from '@nestjs/drizzle';
-import { and, desc, eq, inArray, lt, notInArray, or, sql } from 'drizzle-orm';
+import { and, count, desc, eq, gt, inArray, lt, ne, notInArray, or, sql } from 'drizzle-orm';
 import type { Database } from '../db/database.js';
-import { conversations, messages, users } from '../db/schema.js';
+import { conversationReads, conversations, messages, users } from '../db/schema.js';
 import { publicCols } from '../users/users.repository.js';
 
 const messageCols = {
@@ -14,7 +14,7 @@ const messageCols = {
 };
 
 export type Message = { id: number; conversationId: number; senderId: number; body: string; createdAt: Date };
-type Conversation = { id: number; userAId: number; userBId: number };
+export type Conversation = { id: number; userAId: number; userBId: number };
 
 const pair = (x: number, y: number) => (x < y ? { userAId: x, userBId: y } : { userAId: y, userBId: x });
 
@@ -77,7 +77,81 @@ export class ChatRepository {
       )
       .orderBy(messages.conversationId, desc(messages.id));
     const lastByConversation = new Map(last.map((m) => [m.conversationId, m]));
-    return rows.map((r) => ({ ...r, lastMessage: lastByConversation.get(r.id) ?? null }));
+
+    // 안 읽은 수: 상대가 보낸 메시지 중 내가 읽은 위치보다 뒤에 있는 것
+    const unread = await this.db
+      .select({ conversationId: messages.conversationId, count: count() })
+      .from(messages)
+      .leftJoin(
+        conversationReads,
+        and(eq(conversationReads.conversationId, messages.conversationId), eq(conversationReads.userId, meId)),
+      )
+      .where(
+        and(
+          inArray(
+            messages.conversationId,
+            rows.map((r) => r.id),
+          ),
+          ne(messages.senderId, meId),
+          gt(messages.id, sql`coalesce(${conversationReads.lastReadMessageId}, 0)`),
+        ),
+      )
+      .groupBy(messages.conversationId);
+    const unreadByConversation = new Map(unread.map((u) => [u.conversationId, u.count]));
+
+    return rows.map((r) => ({
+      ...r,
+      lastMessage: lastByConversation.get(r.id) ?? null,
+      unreadCount: unreadByConversation.get(r.id) ?? 0,
+    }));
+  }
+
+  /** 채팅방 화면에 필요한 정보: 상대, 각자 읽은 위치, 내가 아직 첫 메시지(편지)를 안 보냈는지 */
+  async room(conversation: Conversation, meId: number) {
+    const partnerId = conversation.userAId === meId ? conversation.userBId : conversation.userAId;
+    const [partner] = await this.db.select(publicCols).from(users).where(eq(users.id, partnerId));
+    const reads = await this.db
+      .select({ userId: conversationReads.userId, lastReadMessageId: conversationReads.lastReadMessageId })
+      .from(conversationReads)
+      .where(eq(conversationReads.conversationId, conversation.id));
+    const readOf = (userId: number) => reads.find((r) => r.userId === userId)?.lastReadMessageId ?? null;
+    return {
+      id: conversation.id,
+      partner,
+      myLastReadMessageId: readOf(meId),
+      partnerLastReadMessageId: readOf(partnerId),
+      needsLetter: !(await this.hasSent(conversation.id, meId)),
+    };
+  }
+
+  async hasSent(conversationId: number, senderId: number) {
+    const [row] = await this.db
+      .select({ id: messages.id })
+      .from(messages)
+      .where(and(eq(messages.conversationId, conversationId), eq(messages.senderId, senderId)))
+      .limit(1);
+    return !!row;
+  }
+
+  /** 읽은 위치를 올린다 (내려가지 않음). 그 방의 메시지가 아니면 null */
+  async markRead(conversationId: number, userId: number, messageId: number): Promise<number | null> {
+    const [message] = await this.db
+      .select({ id: messages.id })
+      .from(messages)
+      .where(and(eq(messages.id, messageId), eq(messages.conversationId, conversationId)));
+    if (!message) return null;
+    const [row] = await this.db
+      .insert(conversationReads)
+      .values({ conversationId, userId, lastReadMessageId: messageId })
+      .onConflictDoUpdate({
+        target: [conversationReads.conversationId, conversationReads.userId],
+        set: {
+          lastReadMessageId: sql`greatest(${conversationReads.lastReadMessageId}, excluded.last_read_message_id)`,
+          updatedAt: sql`now()`,
+        },
+      })
+      .returning({ lastReadMessageId: conversationReads.lastReadMessageId });
+    return row.lastReadMessageId;
   }
 
   /** 최신순. before(메시지 id)보다 오래된 것을 limit개. limit+1개를 읽어 다음 페이지 유무를 판단. */

@@ -114,3 +114,19 @@ export const introductions = pgTable(
     index('introductions_user_date_idx').on(t.userId, t.date),
   ],
 );
+
+// 대화방별로 각자 어디까지 읽었는지. 뒤로 가지 않는다 (greatest로 갱신)
+export const conversationReads = pgTable(
+  'conversation_reads',
+  {
+    conversationId: integer('conversation_id')
+      .notNull()
+      .references(() => conversations.id, { onDelete: 'cascade' }),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    lastReadMessageId: integer('last_read_message_id').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.conversationId, t.userId] })],
+);

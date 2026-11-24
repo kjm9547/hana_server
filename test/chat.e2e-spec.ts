@@ -5,6 +5,10 @@ import { io, type Socket } from 'socket.io-client';
 import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
 
+// 각자의 첫 메시지는 40자 이상의 편지여야 한다 (#12)
+const MINSU_LETTER = 'はじめまして！ 韓国のミンスです。日本語を勉強していて、ゆっくり文化の話をしてみたいです。';
+const YUKI_LETTER = 'こちらこそはじめまして！ 韓国語を勉強中のゆきです。おすすめの場所をたくさん教えてください！';
+
 // JWT_SECRET, DATABASE_URL(인메모리 PGlite)은 vitest.config.e2e.ts의 env에서 온다. 앱마다 빈 DB로 시작.
 describe('1:1 채팅: 대화방 → 메시지 → 실시간 수신', () => {
   let app: INestApplication;
@@ -102,11 +106,11 @@ describe('1:1 채팅: 대화방 → 메시지 → 실시간 수신', () => {
     const sent = await http()
       .post(`/conversations/${conversationId}/messages`)
       .set(minsu.auth)
-      .send({ body: '  はじめまして！  ' })
+      .send({ body: `  ${MINSU_LETTER}  ` })
       .expect(201);
-    expect(sent.body).toMatchObject({ conversationId, senderId: minsu.id, body: 'はじめまして！' });
+    expect(sent.body).toMatchObject({ conversationId, senderId: minsu.id, body: MINSU_LETTER });
     const pushed = await yukiReceived;
-    expect(pushed).toMatchObject({ conversationId, message: { id: sent.body.id, body: 'はじめまして！' } });
+    expect(pushed).toMatchObject({ conversationId, message: { id: sent.body.id, body: MINSU_LETTER } });
     await minsuReceived;
 
     // 메시지 검증: 빈 문자열(공백만), 1000자 초과
@@ -124,7 +128,7 @@ describe('1:1 채팅: 대화방 → 메시지 → 실시간 수신', () => {
     expect(jiwooGotMessage).toBe(false);
 
     // 페이징: 최신순, before 커서
-    for (const body of ['2', '3', '4']) {
+    for (const body of [YUKI_LETTER, '3', '4']) {
       await http().post(`/conversations/${conversationId}/messages`).set(yuki.auth).send({ body }).expect(201);
     }
     const page1 = await http().get(`/conversations/${conversationId}/messages?limit=2`).set(minsu.auth).expect(200);
@@ -133,7 +137,7 @@ describe('1:1 채팅: 대화방 → 메시지 → 실시간 수신', () => {
       .get(`/conversations/${conversationId}/messages?limit=2&before=${page1.body.nextCursor}`)
       .set(minsu.auth)
       .expect(200);
-    expect(page2.body.items.map((m: { body: string }) => m.body)).toEqual(['2', 'はじめまして！']);
+    expect(page2.body.items.map((m: { body: string }) => m.body)).toEqual([YUKI_LETTER, MINSU_LETTER]);
     expect(page2.body.nextCursor).toBeNull();
 
     // 목록: 최근 활동순, 상대 공개 프로필(이메일 없음) + 마지막 메시지
