@@ -4,16 +4,26 @@ import { PasswordHasher } from '@nestjs/authentication';
 import { io, type Socket } from 'socket.io-client';
 import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
+import { Clock } from '../src/common/clock.js';
+
+/** 테스트에서 날짜를 직접 정하는 시계 */
+export class FakeClock extends Clock {
+  date = '2026-01-01';
+  override today() {
+    return this.date;
+  }
+}
 
 /**
  * e2e 공통 준비. JWT_SECRET, DATABASE_URL(인메모리 PGlite)은 vitest.config.e2e.ts의 env에서 온다.
  * 앱마다 빈 DB로 시작한다.
  */
-export async function createTestApp() {
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+export async function createTestApp({ clock }: { clock?: Clock } = {}) {
+  let builder = Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(PasswordHasher)
-    .useValue(new PasswordHasher({ logN: 10 }))
-    .compile();
+    .useValue(new PasswordHasher({ logN: 10 }));
+  if (clock) builder = builder.overrideProvider(Clock).useValue(clock);
+  const moduleRef = await builder.compile();
   const app: INestApplication = moduleRef.createNestApplication();
   await app.listen(0);
   const url = await app.getUrl();

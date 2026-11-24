@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { check, index, integer, pgEnum, pgTable, primaryKey, text, timestamp, unique } from 'drizzle-orm/pg-core';
+import { check, date, index, integer, pgEnum, pgTable, primaryKey, text, timestamp, unique } from 'drizzle-orm/pg-core';
 
 export const LANGS = ['ko', 'ja'] as const;
 export const lang = pgEnum('lang', LANGS);
@@ -89,3 +89,28 @@ export const reports = pgTable('reports', {
   conversationId: integer('conversation_id').references(() => conversations.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const INTRODUCTION_STATUSES = ['pending', 'passed', 'accepted'] as const;
+export const introductionStatus = pgEnum('introduction_status', INTRODUCTION_STATUSES);
+
+// 오늘의 인연. (user, candidate)는 한 번뿐 — 넘겼든 안 열어봤든 다시 소개하지 않는다 (一期一会)
+export const introductions = pgTable(
+  'introductions',
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    candidateId: integer('candidate_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    date: date({ mode: 'string' }).notNull(),
+    status: introductionStatus().notNull().default('pending'),
+    conversationId: integer('conversation_id').references(() => conversations.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique('introductions_once').on(t.userId, t.candidateId),
+    index('introductions_user_date_idx').on(t.userId, t.date),
+  ],
+);
