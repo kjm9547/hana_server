@@ -1,5 +1,6 @@
 @AGENTS.md
 @docs/PRODUCT.md
+@CONTRIBUTING.md
 
 ## 작업 규칙 (하네스)
 
@@ -11,4 +12,4 @@
 - **DB 스키마**: `src/db/schema.ts`를 고친 뒤 `npx drizzle-kit generate --name=<change>`. 이미 커밋된 `drizzle/` migration은 절대 수정하지 않는다.
 - **비밀값**은 `.env`에만. 코드·테스트·커밋에 넣지 않는다.
 - **포맷**은 PostToolUse 훅이 편집한 `.ts` 파일에 prettier(120자)를 자동 적용한다.
-- 브랜치에서 작업하고 PR로 올린다. main에 직접 push하지 않는다. CI(GitHub Actions)도 `npm run check`를 돌린다.
+- Git 작업은 `CONTRIBUTING.md`를 따른다 (이슈 → `<type>/<이슈번호>-<요약>` 브랜치 → PR, Squash 머지, 머지는 오너가). CI는 `npm run check`와 PR 제목 형식을 검사한다.
