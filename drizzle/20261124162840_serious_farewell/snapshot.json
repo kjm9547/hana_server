@@ -1,0 +1,571 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "09babbb9-9ef6-4b18-9433-4b019a8b2bf2",
+  "prevIds": [
+    "060ca2a7-214c-4788-b29d-1572e1a43da1"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "message_kind"
+      ],
+      "writes": [
+        "s|enum|public.message_kind",
+        "n|enum|public.message_kind",
+        "e|enum|public.message_kind",
+        "n|type|public.message_kind"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "serious_status"
+      ],
+      "writes": [
+        "s|enum|public.serious_status",
+        "n|enum|public.serious_status",
+        "e|enum|public.serious_status",
+        "n|type|public.serious_status"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "serious_requests"
+      ],
+      "writes": [
+        "s|tbl|public.serious_requests",
+        "n|tbl|public.serious_requests",
+        "e|tbl|public.serious_requests",
+        "n|rel|public.serious_requests",
+        "n|type|public.serious_requests",
+        "n|rel|public.serious_requests_pkey"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.serious_status"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "conversations",
+        "serious_at"
+      ],
+      "writes": [
+        "s|col|public.conversations.serious_at",
+        "n|col|public.conversations.serious_at",
+        "e|col|public.conversations.serious_at"
+      ],
+      "reads": [
+        "n|tbl|public.conversations",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "conversations",
+        "closed_at"
+      ],
+      "writes": [
+        "s|col|public.conversations.closed_at",
+        "n|col|public.conversations.closed_at",
+        "e|col|public.conversations.closed_at"
+      ],
+      "reads": [
+        "n|tbl|public.conversations",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "conversations",
+        "closed_by"
+      ],
+      "writes": [
+        "s|col|public.conversations.closed_by",
+        "n|col|public.conversations.closed_by",
+        "e|col|public.conversations.closed_by"
+      ],
+      "reads": [
+        "n|tbl|public.conversations",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "messages",
+        "kind"
+      ],
+      "writes": [
+        "s|col|public.messages.kind",
+        "n|col|public.messages.kind",
+        "e|col|public.messages.kind"
+      ],
+      "reads": [
+        "n|tbl|public.messages",
+        "n|sch|public",
+        "n|enum|public.message_kind"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "serious_requests",
+        "serious_requests_conversation_idx"
+      ],
+      "writes": [
+        "s|idx|public.serious_requests_conversation_idx",
+        "n|idx|public.serious_requests_conversation_idx",
+        "e|idx|public.serious_requests_conversation_idx",
+        "n|rel|public.serious_requests_conversation_idx"
+      ],
+      "reads": [
+        "n|tbl|public.serious_requests",
+        "n|sch|public",
+        "n|col|public.serious_requests.conversation_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "serious_requests",
+        "serious_requests_one_pending"
+      ],
+      "writes": [
+        "s|idx|public.serious_requests_one_pending",
+        "n|idx|public.serious_requests_one_pending",
+        "e|idx|public.serious_requests_one_pending",
+        "n|rel|public.serious_requests_one_pending"
+      ],
+      "reads": [
+        "n|tbl|public.serious_requests",
+        "n|sch|public",
+        "n|col|public.serious_requests.conversation_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "conversations"
+      ],
+      "writes": [
+        "s|fk|public.conversations.conversations_closed_by_users_id_fkey",
+        "n|fk|public.conversations.conversations_closed_by_users_id_fkey",
+        "e|fk|public.conversations.conversations_closed_by_users_id_fkey",
+        "n|con|public.conversations.conversations_closed_by_users_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.conversations",
+        "n|sch|public",
+        "n|tbl|public.users",
+        "n|sch|public",
+        "n|col|public.conversations.closed_by",
+        "n|col|public.users.id",
+        "e|uniqueness|public.users.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "serious_requests"
+      ],
+      "writes": [
+        "s|fk|public.serious_requests.serious_requests_conversation_id_conversations_id_fkey",
+        "n|fk|public.serious_requests.serious_requests_conversation_id_conversations_id_fkey",
+        "e|fk|public.serious_requests.serious_requests_conversation_id_conversations_id_fkey",
+        "n|con|public.serious_requests.serious_requests_conversation_id_conversations_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.serious_requests",
+        "n|sch|public",
+        "n|tbl|public.conversations",
+        "n|sch|public",
+        "n|col|public.serious_requests.conversation_id",
+        "n|col|public.conversations.id",
+        "e|uniqueness|public.conversations.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "serious_requests"
+      ],
+      "writes": [
+        "s|fk|public.serious_requests.serious_requests_requester_id_users_id_fkey",
+        "n|fk|public.serious_requests.serious_requests_requester_id_users_id_fkey",
+        "e|fk|public.serious_requests.serious_requests_requester_id_users_id_fkey",
+        "n|con|public.serious_requests.serious_requests_requester_id_users_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.serious_requests",
+        "n|sch|public",
+        "n|tbl|public.users",
+        "n|sch|public",
+        "n|col|public.serious_requests.requester_id",
+        "n|col|public.users.id",
+        "e|uniqueness|public.users.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "serious_requests",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "message_kind",
+        "values": [
+          "text",
+          "farewell"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "serious_status",
+        "values": [
+          "pending",
+          "accepted",
+          "declined"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "conversations",
+        "name": "serious_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "conversations",
+        "name": "closed_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "conversations",
+        "name": "closed_by",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "messages",
+        "name": "kind",
+        "type": "message_kind",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'text'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "serious_requests",
+        "name": "id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": {
+          "type": "always",
+          "name": "serious_requests_id_seq",
+          "increment": "1",
+          "startWith": "1",
+          "minValue": "1",
+          "maxValue": "2147483647",
+          "cache": 1,
+          "cycle": false
+        },
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "serious_requests",
+        "name": "conversation_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "serious_requests",
+        "name": "requester_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "serious_requests",
+        "name": "status",
+        "type": "serious_status",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'pending'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "serious_requests",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "serious_requests",
+        "name": "responded_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "serious_requests",
+        "name": "serious_requests_conversation_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "conversation_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "serious_requests",
+        "name": "serious_requests_one_pending",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "conversation_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"status\" = 'pending'",
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "conversations",
+        "name": "conversations_closed_by_users_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "closed_by"
+        ],
+        "schemaTo": "public",
+        "tableTo": "users",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "serious_requests",
+        "name": "serious_requests_conversation_id_conversations_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "conversation_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "conversations",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "serious_requests",
+        "name": "serious_requests_requester_id_users_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "requester_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "users",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "serious_requests",
+        "name": "serious_requests_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
+}

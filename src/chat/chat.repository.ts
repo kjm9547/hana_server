@@ -2,19 +2,51 @@ import { Injectable } from '@nestjs/common';
 import { InjectDrizzle } from '@nestjs/drizzle';
 import { and, count, desc, eq, gt, inArray, lt, ne, notInArray, or, sql } from 'drizzle-orm';
 import type { Database } from '../db/database.js';
-import { conversationReads, conversations, messages, users } from '../db/schema.js';
-import { publicCols } from '../users/users.repository.js';
+import {
+  conversationReads,
+  conversations,
+  type MESSAGE_KINDS,
+  messages,
+  seriousRequests,
+  users,
+} from '../db/schema.js';
+import { isUniqueViolation, publicCols } from '../users/users.repository.js';
 
 const messageCols = {
   id: messages.id,
   conversationId: messages.conversationId,
   senderId: messages.senderId,
   body: messages.body,
+  kind: messages.kind,
   createdAt: messages.createdAt,
 };
 
-export type Message = { id: number; conversationId: number; senderId: number; body: string; createdAt: Date };
-export type Conversation = { id: number; userAId: number; userBId: number };
+const conversationCols = {
+  id: conversations.id,
+  userAId: conversations.userAId,
+  userBId: conversations.userBId,
+  seriousAt: conversations.seriousAt,
+  closedAt: conversations.closedAt,
+  closedBy: conversations.closedBy,
+};
+
+export type MessageKind = (typeof MESSAGE_KINDS)[number];
+export type Message = {
+  id: number;
+  conversationId: number;
+  senderId: number;
+  body: string;
+  kind: MessageKind;
+  createdAt: Date;
+};
+export type Conversation = {
+  id: number;
+  userAId: number;
+  userBId: number;
+  seriousAt: Date | null;
+  closedAt: Date | null;
+  closedBy: number | null;
+};
 
 const pair = (x: number, y: number) => (x < y ? { userAId: x, userBId: y } : { userAId: y, userBId: x });
 
@@ -29,10 +61,10 @@ export class ChatRepository {
       .insert(conversations)
       .values(ids)
       .onConflictDoNothing({ target: [conversations.userAId, conversations.userBId] })
-      .returning({ id: conversations.id, userAId: conversations.userAId, userBId: conversations.userBId });
+      .returning(conversationCols);
     if (created) return created;
     const [existing] = await this.db
-      .select({ id: conversations.id, userAId: conversations.userAId, userBId: conversations.userBId })
+      .select(conversationCols)
       .from(conversations)
       .where(and(eq(conversations.userAId, ids.userAId), eq(conversations.userBId, ids.userBId)));
     return existing;
@@ -41,7 +73,7 @@ export class ChatRepository {
   /** 내가 참여한 대화방만 돌려준다. 남의 방이면 null → 호출부에서 404 (존재 여부도 숨긴다). */
   async findForMember(conversationId: number, meId: number): Promise<Conversation | null> {
     const [row] = await this.db
-      .select({ id: conversations.id, userAId: conversations.userAId, userBId: conversations.userBId })
+      .select(conversationCols)
       .from(conversations)
       .where(
         and(eq(conversations.id, conversationId), or(eq(conversations.userAId, meId), eq(conversations.userBId, meId))),
@@ -54,7 +86,12 @@ export class ChatRepository {
   async list(meId: number, hiddenPartnerIds: number[] = []) {
     const partnerId = sql<number>`case when ${conversations.userAId} = ${meId} then ${conversations.userBId} else ${conversations.userAId} end`;
     const rows = await this.db
-      .select({ id: conversations.id, partner: publicCols })
+      .select({
+        id: conversations.id,
+        partner: publicCols,
+        seriousAt: conversations.seriousAt,
+        closedAt: conversations.closedAt,
+      })
       .from(conversations)
       .innerJoin(users, eq(users.id, partnerId))
       .where(
@@ -115,13 +152,72 @@ export class ChatRepository {
       .from(conversationReads)
       .where(eq(conversationReads.conversationId, conversation.id));
     const readOf = (userId: number) => reads.find((r) => r.userId === userId)?.lastReadMessageId ?? null;
+    const requests = await this.seriousRequests(conversation.id);
+    const pending = requests.find((r) => r.status === 'pending');
     return {
       id: conversation.id,
       partner,
       myLastReadMessageId: readOf(meId),
       partnerLastReadMessageId: readOf(partnerId),
       needsLetter: !(await this.hasSent(conversation.id, meId)),
+      seriousAt: conversation.seriousAt,
+      // 대기 중인 신청: 내가 보냈는지(기다리는 중) / 받았는지(응답해야 함)
+      seriousRequest: pending ? { id: pending.id, requestedByMe: pending.requesterId === meId } : null,
+      closedAt: conversation.closedAt,
+      closedByMe: conversation.closedBy === meId,
     };
+  }
+
+  /** 이 방의 진지한 인연 신청들, 최근순 */
+  async seriousRequests(conversationId: number) {
+    return this.db
+      .select({ id: seriousRequests.id, requesterId: seriousRequests.requesterId, status: seriousRequests.status })
+      .from(seriousRequests)
+      .where(eq(seriousRequests.conversationId, conversationId))
+      .orderBy(desc(seriousRequests.id));
+  }
+
+  /** 이미 대기 중인 신청이 있으면(동시 신청 포함) null */
+  async requestSerious(conversationId: number, requesterId: number) {
+    try {
+      const [request] = await this.db.insert(seriousRequests).values({ conversationId, requesterId }).returning({
+        id: seriousRequests.id,
+        requesterId: seriousRequests.requesterId,
+        status: seriousRequests.status,
+      });
+      return request;
+    } catch (error) {
+      if (isUniqueViolation(error)) return null;
+      throw error;
+    }
+  }
+
+  /** 수락하면 대화방에 진지한 인연 시각을 남긴다 */
+  async respondSerious(requestId: number, conversationId: number, accept: boolean) {
+    return this.db.transaction(async (tx) => {
+      const now = new Date();
+      await tx
+        .update(seriousRequests)
+        .set({ status: accept ? 'accepted' : 'declined', respondedAt: now })
+        .where(eq(seriousRequests.id, requestId));
+      if (accept) await tx.update(conversations).set({ seriousAt: now }).where(eq(conversations.id, conversationId));
+      return accept ? now : null;
+    });
+  }
+
+  /** 끝맺음 인사를 남기고 방을 닫는다 (한 트랜잭션) */
+  async close(conversationId: number, userId: number, farewell: string): Promise<Message> {
+    return this.db.transaction(async (tx) => {
+      const [message] = await tx
+        .insert(messages)
+        .values({ conversationId, senderId: userId, body: farewell, kind: 'farewell' })
+        .returning(messageCols);
+      await tx
+        .update(conversations)
+        .set({ closedAt: message.createdAt, closedBy: userId, lastMessageAt: message.createdAt })
+        .where(eq(conversations.id, conversationId));
+      return message;
+    });
   }
 
   async hasSent(conversationId: number, senderId: number) {

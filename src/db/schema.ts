@@ -1,5 +1,17 @@
 import { sql } from 'drizzle-orm';
-import { check, date, index, integer, pgEnum, pgTable, primaryKey, text, timestamp, unique } from 'drizzle-orm/pg-core';
+import {
+  check,
+  date,
+  index,
+  integer,
+  pgEnum,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  unique,
+  uniqueIndex,
+} from 'drizzle-orm/pg-core';
 
 export const LANGS = ['ko', 'ja'] as const;
 export const lang = pgEnum('lang', LANGS);
@@ -32,6 +44,11 @@ export const conversations = pgTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     // 목록 정렬용. 메시지를 보낼 때 같은 트랜잭션에서 갱신한다
     lastMessageAt: timestamp('last_message_at', { withTimezone: true }),
+    // 진지한 인연이 성립한 시각 (신청이 수락됨)
+    seriousAt: timestamp('serious_at', { withTimezone: true }),
+    // 끝맺음 인사로 닫힌 시각과 닫은 사람. 닫힌 방은 다시 열 수 없다 (一期一会)
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    closedBy: integer('closed_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -40,6 +57,10 @@ export const conversations = pgTable(
     index('conversations_user_b_idx').on(t.userBId),
   ],
 );
+
+// text: 일반 메시지 / farewell: 대화를 마치며 남긴 끝맺음 인사
+export const MESSAGE_KINDS = ['text', 'farewell'] as const;
+export const messageKind = pgEnum('message_kind', MESSAGE_KINDS);
 
 export const messages = pgTable(
   'messages',
@@ -52,6 +73,7 @@ export const messages = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     body: text().notNull(),
+    kind: messageKind().notNull().default('text'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index('messages_conversation_id_idx').on(t.conversationId, t.id)],
@@ -129,4 +151,31 @@ export const conversationReads = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [primaryKey({ columns: [t.conversationId, t.userId] })],
+);
+
+export const SERIOUS_STATUSES = ['pending', 'accepted', 'declined'] as const;
+export const seriousStatus = pgEnum('serious_status', SERIOUS_STATUSES);
+
+// 진지한 인연 신청. 나중에 결제는 '신청' 시점에 붙인다 (#7). 지금은 무료.
+export const seriousRequests = pgTable(
+  'serious_requests',
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    conversationId: integer('conversation_id')
+      .notNull()
+      .references(() => conversations.id, { onDelete: 'cascade' }),
+    requesterId: integer('requester_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    status: seriousStatus().notNull().default('pending'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    respondedAt: timestamp('responded_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('serious_requests_conversation_idx').on(t.conversationId),
+    // 동시에 신청해도 대기 중인 신청은 방마다 하나
+    uniqueIndex('serious_requests_one_pending')
+      .on(t.conversationId)
+      .where(sql`${t.status} = 'pending'`),
+  ],
 );
