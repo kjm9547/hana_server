@@ -28,6 +28,11 @@ export class ChatGateway implements OnGatewayConnection {
     this.server.to(userIds.map(userRoom)).emit('conversation:read', payload);
   }
 
+  /** 방 상태가 바뀌었다는 신호(진지한 인연 신청·응답). 클라이언트는 GET /conversations/:id로 다시 읽는다 */
+  notifyConversation(userIds: number[], conversationId: number, event: 'serious:requested' | 'serious:updated') {
+    this.server.to(userIds.map(userRoom)).emit(event, { conversationId });
+  }
+
   notifyMessage(userIds: number[], message: Message) {
     this.server.to(userIds.map(userRoom)).emit('message:new', { conversationId: message.conversationId, message });
   }

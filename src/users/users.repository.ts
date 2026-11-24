@@ -76,7 +76,7 @@ export class UsersRepository {
 }
 
 /** Drizzle은 드라이버 에러를 감싸므로 cause 체인을 따라간다. 23505 = Postgres unique_violation */
-function isUniqueViolation(error: unknown): boolean {
+export function isUniqueViolation(error: unknown): boolean {
   for (let e = error as { code?: string; cause?: unknown } | undefined; e; e = e.cause as typeof e) {
     if (e.code === '23505') return true;
   }

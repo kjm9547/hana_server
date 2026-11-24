@@ -17,7 +17,7 @@
     "start:prod": "node dist/main",
     "db:up": "docker compose up -d --wait",
     "seed": "nest build && node --env-file-if-exists=.env dist/db/seed.js",
-    "lint": "oxlint --type-aware src/ test/",
+    "lint": "oxlint --type-aware --deny-warnings src/ test/",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
