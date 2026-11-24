@@ -1,8 +1,12 @@
 import { sql } from 'drizzle-orm';
-import { check, index, integer, pgEnum, pgTable, text, timestamp, unique } from 'drizzle-orm/pg-core';
+import { check, index, integer, pgEnum, pgTable, primaryKey, text, timestamp, unique } from 'drizzle-orm/pg-core';
 
 export const LANGS = ['ko', 'ja'] as const;
 export const lang = pgEnum('lang', LANGS);
+
+// any: 국적 자유(기본) / cross: 한·일끼리만 소개받기. 상대의 옵션도 함께 존중한다.
+export const MATCH_PREFERENCES = ['any', 'cross'] as const;
+export const matchPreference = pgEnum('match_preference', MATCH_PREFERENCES);
 
 export const users = pgTable('users', {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -11,6 +15,7 @@ export const users = pgTable('users', {
   nickname: text().notNull(),
   nativeLang: lang('native_lang').notNull(),
   bio: text().notNull().default(''),
+  matchPreference: matchPreference('match_preference').notNull().default('any'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -51,3 +56,36 @@ export const messages = pgTable(
   },
   (t) => [index('messages_conversation_id_idx').on(t.conversationId, t.id)],
 );
+
+// 차단: 한쪽이 막아도 양쪽 모두 소개·대화가 막힌다
+export const blocks = pgTable(
+  'blocks',
+  {
+    blockerId: integer('blocker_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    blockedId: integer('blocked_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.blockerId, t.blockedId] }), index('blocks_blocked_id_idx').on(t.blockedId)],
+);
+
+export const REPORT_REASONS = ['spam', 'harassment', 'inappropriate', 'scam', 'other'] as const;
+export const reportReason = pgEnum('report_reason', REPORT_REASONS);
+
+// ponytail: 검토 화면 없음. 운영 시작 전에 관리자 확인 경로(최소한 알림)가 필요하다.
+export const reports = pgTable('reports', {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  reporterId: integer('reporter_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  reportedId: integer('reported_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  reason: reportReason().notNull(),
+  detail: text().notNull().default(''),
+  conversationId: integer('conversation_id').references(() => conversations.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});

@@ -1,10 +1,16 @@
 import { Body, Controller, Get, Patch, Query } from '@nestjs/common';
 import { CurrentUser } from '@nestjs/authentication';
 import { z } from 'zod';
+import { MATCH_PREFERENCES } from '../db/schema.js';
+import { SafetyRepository } from '../safety/safety.repository.js';
 import { type User, UsersRepository } from './users.repository.js';
 
 const updateMeSchema = z
-  .object({ nickname: z.string().trim().min(1).max(30), bio: z.string().trim().max(500) })
+  .object({
+    nickname: z.string().trim().min(1).max(30),
+    bio: z.string().trim().max(500),
+    matchPreference: z.enum(MATCH_PREFERENCES),
+  })
   .partial();
 const pageSchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(20),
@@ -13,7 +19,10 @@ const pageSchema = z.object({
 
 @Controller()
 export class UsersController {
-  constructor(private readonly users: UsersRepository) {}
+  constructor(
+    private readonly users: UsersRepository,
+    private readonly safety: SafetyRepository,
+  ) {}
 
   @Get('me')
   me(@CurrentUser() user: User) {
@@ -26,7 +35,7 @@ export class UsersController {
   }
 
   @Get('users')
-  partners(@CurrentUser() me: User, @Query({ schema: pageSchema }) q: z.infer<typeof pageSchema>) {
-    return this.users.partners(me, q.limit, q.after);
+  async partners(@CurrentUser() me: User, @Query({ schema: pageSchema }) q: z.infer<typeof pageSchema>) {
+    return this.users.partners(me, q.limit, await this.safety.blockedEitherWay(me.id), q.after);
   }
 }
