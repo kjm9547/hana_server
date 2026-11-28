@@ -1,0 +1,719 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "09888fa8-64d3-42ab-81d1-5bc757dfb631",
+  "prevIds": [
+    "efeefcee-802e-44b3-adba-1a94e43d4086"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "post_category"
+      ],
+      "writes": [
+        "s|enum|public.post_category",
+        "n|enum|public.post_category",
+        "e|enum|public.post_category",
+        "n|type|public.post_category"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "post_comments"
+      ],
+      "writes": [
+        "s|tbl|public.post_comments",
+        "n|tbl|public.post_comments",
+        "e|tbl|public.post_comments",
+        "n|rel|public.post_comments",
+        "n|type|public.post_comments",
+        "n|rel|public.post_comments_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "post_likes"
+      ],
+      "writes": [
+        "s|tbl|public.post_likes",
+        "n|tbl|public.post_likes",
+        "e|tbl|public.post_likes",
+        "n|rel|public.post_likes",
+        "n|type|public.post_likes",
+        "n|rel|public.post_likes_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "posts"
+      ],
+      "writes": [
+        "s|tbl|public.posts",
+        "n|tbl|public.posts",
+        "e|tbl|public.posts",
+        "n|rel|public.posts",
+        "n|type|public.posts",
+        "n|rel|public.posts_pkey"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.post_category"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "post_comments",
+        "post_comments_post_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.post_comments_post_id_idx",
+        "n|idx|public.post_comments_post_id_idx",
+        "e|idx|public.post_comments_post_id_idx",
+        "n|rel|public.post_comments_post_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.post_comments",
+        "n|sch|public",
+        "n|col|public.post_comments.post_id",
+        "n|col|public.post_comments.id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "posts",
+        "posts_author_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.posts_author_id_idx",
+        "n|idx|public.posts_author_id_idx",
+        "e|idx|public.posts_author_id_idx",
+        "n|rel|public.posts_author_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.posts",
+        "n|sch|public",
+        "n|col|public.posts.author_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "post_comments"
+      ],
+      "writes": [
+        "s|fk|public.post_comments.post_comments_post_id_posts_id_fkey",
+        "n|fk|public.post_comments.post_comments_post_id_posts_id_fkey",
+        "e|fk|public.post_comments.post_comments_post_id_posts_id_fkey",
+        "n|con|public.post_comments.post_comments_post_id_posts_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.post_comments",
+        "n|sch|public",
+        "n|tbl|public.posts",
+        "n|sch|public",
+        "n|col|public.post_comments.post_id",
+        "n|col|public.posts.id",
+        "e|uniqueness|public.posts.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "post_comments"
+      ],
+      "writes": [
+        "s|fk|public.post_comments.post_comments_author_id_users_id_fkey",
+        "n|fk|public.post_comments.post_comments_author_id_users_id_fkey",
+        "e|fk|public.post_comments.post_comments_author_id_users_id_fkey",
+        "n|con|public.post_comments.post_comments_author_id_users_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.post_comments",
+        "n|sch|public",
+        "n|tbl|public.users",
+        "n|sch|public",
+        "n|col|public.post_comments.author_id",
+        "n|col|public.users.id",
+        "e|uniqueness|public.users.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "post_likes"
+      ],
+      "writes": [
+        "s|fk|public.post_likes.post_likes_post_id_posts_id_fkey",
+        "n|fk|public.post_likes.post_likes_post_id_posts_id_fkey",
+        "e|fk|public.post_likes.post_likes_post_id_posts_id_fkey",
+        "n|con|public.post_likes.post_likes_post_id_posts_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.post_likes",
+        "n|sch|public",
+        "n|tbl|public.posts",
+        "n|sch|public",
+        "n|col|public.post_likes.post_id",
+        "n|col|public.posts.id",
+        "e|uniqueness|public.posts.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "post_likes"
+      ],
+      "writes": [
+        "s|fk|public.post_likes.post_likes_user_id_users_id_fkey",
+        "n|fk|public.post_likes.post_likes_user_id_users_id_fkey",
+        "e|fk|public.post_likes.post_likes_user_id_users_id_fkey",
+        "n|con|public.post_likes.post_likes_user_id_users_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.post_likes",
+        "n|sch|public",
+        "n|tbl|public.users",
+        "n|sch|public",
+        "n|col|public.post_likes.user_id",
+        "n|col|public.users.id",
+        "e|uniqueness|public.users.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "posts"
+      ],
+      "writes": [
+        "s|fk|public.posts.posts_author_id_users_id_fkey",
+        "n|fk|public.posts.posts_author_id_users_id_fkey",
+        "e|fk|public.posts.posts_author_id_users_id_fkey",
+        "n|con|public.posts.posts_author_id_users_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.posts",
+        "n|sch|public",
+        "n|tbl|public.users",
+        "n|sch|public",
+        "n|col|public.posts.author_id",
+        "n|col|public.users.id",
+        "e|uniqueness|public.users.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "post_comments",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "post_likes",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "posts",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "post_category",
+        "values": [
+          "review",
+          "question",
+          "companion"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "post_comments",
+        "name": "id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": {
+          "type": "always",
+          "name": "post_comments_id_seq",
+          "increment": "1",
+          "startWith": "1",
+          "minValue": "1",
+          "maxValue": "2147483647",
+          "cache": 1,
+          "cycle": false
+        },
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "post_comments",
+        "name": "post_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "post_comments",
+        "name": "author_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "post_comments",
+        "name": "body",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "post_comments",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "post_likes",
+        "name": "post_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "post_likes",
+        "name": "user_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "post_likes",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "posts",
+        "name": "id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": {
+          "type": "always",
+          "name": "posts_id_seq",
+          "increment": "1",
+          "startWith": "1",
+          "minValue": "1",
+          "maxValue": "2147483647",
+          "cache": 1,
+          "cycle": false
+        },
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "posts",
+        "name": "author_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "posts",
+        "name": "category",
+        "type": "post_category",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "posts",
+        "name": "title",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "posts",
+        "name": "body",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "posts",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "post_comments",
+        "name": "post_comments_post_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "post_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "posts",
+        "name": "posts_author_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "author_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "post_comments",
+        "name": "post_comments_post_id_posts_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "post_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "posts",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "post_comments",
+        "name": "post_comments_author_id_users_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "author_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "users",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "post_likes",
+        "name": "post_likes_post_id_posts_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "post_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "posts",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "post_likes",
+        "name": "post_likes_user_id_users_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "users",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "posts",
+        "name": "posts_author_id_users_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "author_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "users",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "post_likes",
+        "name": "post_likes_pkey",
+        "columns": [
+          "post_id",
+          "user_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "post_comments",
+        "name": "post_comments_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "posts",
+        "name": "posts_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
+}

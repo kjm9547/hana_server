@@ -1,0 +1,56 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "c128a8d0-3b5c-4484-82c7-8be113efb065",
+  "prevIds": [
+    "09888fa8-64d3-42ab-81d1-5bc757dfb631"
+  ],
+  "footprints": [
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "posts",
+        "category"
+      ],
+      "writes": [
+        "s|col|public.posts.category",
+        "n|col|public.posts.category",
+        "e|col|public.posts.category"
+      ],
+      "reads": [
+        "n|tbl|public.posts",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "post_category"
+      ],
+      "writes": [
+        "s|enum|public.post_category",
+        "n|enum|public.post_category",
+        "e|enum|public.post_category",
+        "n|type|public.post_category"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "drop",
+      "key": "enums\u0000[\"public\",\"post_category\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"posts\",\"category\"]"
+    }
+  ]
+}
